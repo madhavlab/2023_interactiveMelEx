@@ -76,9 +76,8 @@ conf_inner_optimizer = tf.keras.optimizers.Adam(learning_rate=beta)
 outer_optimizer = tf.keras.optimizers.Adam(learning_rate=alpha)
 conf_outer_optimizer = tf.keras.optimizers.Adam(learning_rate=alpha)
 
-inner_step = 10
+inner_step = 10 # number of inner-loop updates
 EPOCHS = 400
-loop = 1 # s no. of inner-loop iterations
 
 
 def get_support_query(x):
@@ -97,7 +96,7 @@ def get_support_query(x):
     
 
 def custom_loss(yt,yp,ts):
-    l = 0.2
+    l = 0.2 #lambda
     w_mask = tf.zeros(win_size, dtype=tf.float32)
     w_mask = tf.tensor_scatter_nd_update(w_mask, tf.expand_dims(ts, 1), tf.ones_like(ts, dtype=tf.float32))
     w_mask = tf.expand_dims(w_mask,0)
@@ -260,24 +259,22 @@ for e in range(EPOCHS):
         X = (X-mean)/std
         X = X[:,:,:,tf.newaxis]
         
-        start = time.time()
-        for l in range(loop):
-            print(f'Epoch..{e+1} episode..{step+1} Loop..{l+1}')
-            meta_pre_weights = meta_model_pre.get_weights()
-            meta_conf_weights = meta_model_conf.get_weights()
-            
-            # ILO            
-            meta_model_conf.set_weights(meta_conf_weights)
-            meta_model_pre.set_weights(meta_pre_weights)
-            
-            support_indices, query_indices = tf.map_fn(get_support_query,[X],(tf.int64, tf.int64))           
-            pre_inner_loss = tf.map_fn(lambda x: tf.py_function(support_pretrain_step,x,tf.float32),(X,Y,support_indices),tf.float32)
-            conf_inner_loss = tf.map_fn(lambda x: tf.py_function(support_conftrain_step,x,tf.float32),(X,Y,support_indices),tf.float32)
+        print(f'Epoch..{e+1} episode..{step+1} Loop..{l+1}')
+        meta_pre_weights = meta_model_pre.get_weights()
+        meta_conf_weights = meta_model_conf.get_weights()
+        
+        # ILO            
+        meta_model_conf.set_weights(meta_conf_weights)
+        meta_model_pre.set_weights(meta_pre_weights)
+        
+        support_indices, query_indices = tf.map_fn(get_support_query,[X],(tf.int64, tf.int64))           
+        pre_inner_loss = tf.map_fn(lambda x: tf.py_function(support_pretrain_step,x,tf.float32),(X,Y,support_indices),tf.float32)
+        conf_inner_loss = tf.map_fn(lambda x: tf.py_function(support_conftrain_step,x,tf.float32),(X,Y,support_indices),tf.float32)
 
-            # OLO 
-            output = tf.map_fn(lambda x: tf.py_function(query_pretrain_step,x,[tf.float32,tf.float32,tf.float32,tf.float32]),(X,Y,query_indices),fn_output_signature=[tf.float32,tf.float32,tf.float32,tf.float32])
-            pre_outer_loss, conf_outer_loss,rpa,rca,oa = output
-            print(f'After adaptation..{rpa} {rca} {oa}')
+        # OLO 
+        output = tf.map_fn(lambda x: tf.py_function(query_pretrain_step,x,[tf.float32,tf.float32,tf.float32,tf.float32]),(X,Y,query_indices),fn_output_signature=[tf.float32,tf.float32,tf.float32,tf.float32])
+        pre_outer_loss, conf_outer_loss,rpa,rca,oa = output
+        print(f'After adaptation..{rpa} {rca} {oa}')
         olo_pre_loss=np.append(olo_pre_loss,pre_outer_loss.numpy())
         olo_conf_loss=np.append(olo_conf_loss,conf_outer_loss.numpy())
         rpa_batch.append(rpa)

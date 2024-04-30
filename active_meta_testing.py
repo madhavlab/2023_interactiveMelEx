@@ -25,7 +25,7 @@ from models import *
 
 #############################################################################
 
-train_audio_files = # path to test data in target domain DT1/DT2/DT3 (.npy files)
+test_audio_files = # path to test data in target domain DT1/DT2/DT3 (.npy files)
 pitch_files = # path to pitch files in target domain DT1/DT2/DT3 (.npy files)
 
 #############################################################################
@@ -45,9 +45,9 @@ pitch_range = np.concatenate([np.zeros(1),pitch_range])
 
 pitch_files_map = build_pitch_files_map(pitch_files)
 
-train_pitch_files = np.array([])
-for audio_file in train_audio_files:
-    train_pitch_files = np.append(train_pitch_files,pitch_files_map[os.path.basename(os.path.splitext(audio_file)[0])])
+test_pitch_files = np.array([])
+for audio_file in test_audio_files:
+    test_pitch_files = np.append(test_pitch_files,pitch_files_map[os.path.basename(os.path.splitext(audio_file)[0])])
 
 #############################################################################
 
@@ -231,10 +231,10 @@ std = np.load('tot_std.npy')
 tot_pre_loss = []
 tot_conf_loss = []  
 
-train_dataset = tf.data.Dataset.from_tensor_slices((train_audio_files,train_pitch_files)).shuffle(len(train_audio_files))
-train_dataset = train_dataset.map(lambda wav,pitch: (tf.py_function(preprocess_wav,[wav],tf.float32),
+test_dataset = tf.data.Dataset.from_tensor_slices((test_audio_files,test_pitch_files)).shuffle(len(test_audio_files))
+test_dataset = test_dataset.map(lambda wav,pitch: (tf.py_function(preprocess_wav,[wav],tf.float32),
                                                 tf.py_function(preprocess_pitch,[pitch],tf.float32)),num_parallel_calls=tf.data.experimental.AUTOTUNE)
-train_dataset = train_dataset.batch(1)    
+test_dataset = test_dataset.batch(1)    
 
 
 rpa_data = []
@@ -242,7 +242,7 @@ rca_data = []
 oa_data = []
 
 
-for step,batch in enumerate(train_dataset):
+for step,batch in enumerate(test_dataset):
     X,Y = batch
     X = (X-mean)/std
     X = X[:,:,:,tf.newaxis]
