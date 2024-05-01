@@ -1,5 +1,4 @@
-**Interactive singing melody extraction based on active adaptation**
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **Interactive singing melody extraction based on active adaptation**
 
 Step-by-step training: <br /> <br />
 **STEP 1:** Run the pretrain_basemodel.py file to pre-train the melody estimation model. The base model is present in the models.py file. <br />
