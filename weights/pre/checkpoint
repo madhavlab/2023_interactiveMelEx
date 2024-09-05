@@ -1,0 +1,2 @@
+model_checkpoint_path: "meta_weights-500"
+all_model_checkpoint_paths: "meta_weights-500"
