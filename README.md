@@ -1,5 +1,10 @@
 # **Interactive singing melody extraction based on active adaptation**
 
+The paper associated with these codes:
+- Kavya Ranjan Saxena and Vipul Arora. "Interactive singing melody extraction based on active adaptation." IEEE/ACM Transactions on Audio, Speech, and Language Processing, 2024.
+
+Trained models are in the folder `weight`
+
 Step-by-step training: <br /> <br />
 **STEP 1:** Run the **pretrain_basemodel.py** file to pre-train the melody estimation model. The base model is present in the models.py file. <br />
 **STEP 2:** Run the **pretrain_confmodel.py** file to pre-train the confidence model. The confidence model is present in the models.py file. <br />
